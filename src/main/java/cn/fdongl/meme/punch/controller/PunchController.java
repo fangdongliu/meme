@@ -58,7 +58,7 @@ public class PunchController {
     public Object status(
             HttpServletRequest request
     ) throws Exception {
-        LoginStatus loginStatus = LoginStatus.fromRequestAndCheckPair(request);
+        LoginStatus loginStatus =test();// LoginStatus.fromRequestAndCheckPair(request);
 
         Calendar calendar = Calendar.getInstance();
 
