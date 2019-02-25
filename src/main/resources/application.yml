@@ -1,0 +1,21 @@
+server:
+
+  port: 8443
+  ssl:
+    key-store: classpath:www.fdongl.cn.jks
+    key-store-type: JKS
+    key-store-password: m0526gtuldff4
+
+spring:
+  datasource:
+    url: jdbc:mysql://140.143.39.84:3306/meme?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+    username: fang
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jackson:
+    date-format: yyyy/MM/dd
+    time-zone: UTC
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 1MB
