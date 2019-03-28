@@ -1,11 +1,12 @@
 package cn.fdongl.meme.task.controller;
 
 import cn.fdongl.meme.authority.entity.LoginStatus;
+import cn.fdongl.meme.pair.mapper.PairMapper;
+import cn.fdongl.meme.seed.mapper.SeedMapper;
 import cn.fdongl.meme.task.entity.Task;
 import cn.fdongl.meme.task.entity.TaskCreateA;
 import cn.fdongl.meme.task.entity.TaskCreateB;
 import cn.fdongl.meme.task.mapper.TaskMapper;
-import cn.fdongl.meme.tool.ErrorDefiner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,9 @@ public class TaskController {
 
     @Autowired
     TaskMapper taskMapper;
+
+    @Autowired
+    PairMapper pairMapper;
 
     @PostMapping("list")
     public Object list(
@@ -90,8 +94,8 @@ public class TaskController {
             @Valid TaskCreateA param
             )throws Exception{
 
-        LoginStatus loginStatus = LoginStatus.fromRequestAndCheckPair(request);
-       // LoginStatus loginStatus = new LoginStatus(6,15,"");
+        LoginStatus loginStatus = LoginStatus.fromRequest(request);
+
         param.setAUserId(loginStatus.getUserId());
 
         Integer taskId = taskMapper.getCurrentTaskId(loginStatus.getPairId());
@@ -100,7 +104,7 @@ public class TaskController {
             throw new Exception();
         }
 
-        Integer n = 0;
+        Integer n = 0,m=0;
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
 
@@ -132,15 +136,16 @@ public class TaskController {
 
         param.setPairId(loginStatus.getPairId());
 
-        try {
-            n = taskMapper.createA(param);
+        if(param.getRewardType()==0){
+
         }
-        catch (Exception e){
-            e.printStackTrace();
+        else if(param.getRewardType() == 1 ) {
+            int level = getLevel(pairMapper.info(param.getPairId()).getAPunchCount() + pairMapper.info(param.getPairId()).getBPunchCount());
+            if (Integer.parseInt(param.getRewardParam()) > level*3) throw new Exception("未解锁种子类型");
+            taskMapper.createSeedA(param,n);
         }
-        if(n<=0){
-            throw new Exception();
-        }
+
+        n = taskMapper.createA(param);
 
         return null;
 
@@ -153,6 +158,7 @@ public class TaskController {
             )throws Exception{
 
         LoginStatus loginStatus = LoginStatus.fromRequestAndCheckPair(request);
+//        LoginStatus loginStatus = new LoginStatus(200,11165,"");
 
         Integer t = 0;
 
@@ -181,9 +187,21 @@ public class TaskController {
             throw new Exception();
         }
 
+        n=null;
+
+        n=taskMapper.createSeedB(param,t,taskMapper.getCurrentTaskId(param.getPairId()));
+        if(n<=0){
+            throw new Exception();
+        }
         return null;
 
     }
 
+    public int getLevel(int cnt){
+        if (cnt<30) return  1;
+        else if(cnt<50) return  2;
+        else if(cnt<100) return  3;
+        else return 4;
+    }
 
 }

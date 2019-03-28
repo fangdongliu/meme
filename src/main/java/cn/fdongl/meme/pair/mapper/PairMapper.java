@@ -20,7 +20,9 @@ public interface PairMapper {
     @Delete("delete from pair where (a_id = #{param1}) and `status` = -1;")
     Integer deletePairs(Integer userId);
 
-    @Update("update pair set b_id = #{param2},`status` = 0 where pair_id = #{param1} and a_id != #{param2} and `status` = -1;")
+    @Update("update pair set b_id = #{param2},`status` = 0 where pair_id = #{param1} and a_id != #{param2} and `status` = -1;"+
+            "INSERT INTO seed (`pair_id`) VALUES (#{param1});" +
+            "INSERT INTO medal (`pair_id`) VALUES (#{param1});" )
     Integer accept(Integer pairId,Integer userId);
 
     @Update("update pair set `status`=1,end_date=now() where `status` = 0 and (a_id=#{param2} or b_id=#{param2})")
@@ -53,5 +55,6 @@ public interface PairMapper {
             "(pair.a_id=#{param1} AND (pair.`status`=1 OR pair.`status`=3)) OR " +
             "(pair.b_id=#{param1} AND (pair.`status`=1 OR pair.`status`=5)))T ON user.user_id = T.a")
     List<ShortPair>list(Integer userId);
+
 
 }

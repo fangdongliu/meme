@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateFile {
 
+    byte[] data;
     String filename;
     String type;
     Integer createUser;

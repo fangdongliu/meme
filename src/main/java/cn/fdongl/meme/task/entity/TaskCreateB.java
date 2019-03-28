@@ -15,7 +15,7 @@ public class TaskCreateB {
     Integer userId;
 
     @NotNull
-    @Range(max = 23,min = 0)
+    @Range(max = 22,min = 0)
     Integer startTime;
     @NotNull
     @Length(max=48)

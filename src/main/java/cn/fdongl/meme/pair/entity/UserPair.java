@@ -22,5 +22,4 @@ public class UserPair implements Serializable {
     Integer bRPunchCount;
     Timestamp createDate;
     Timestamp endDate;
-
 }

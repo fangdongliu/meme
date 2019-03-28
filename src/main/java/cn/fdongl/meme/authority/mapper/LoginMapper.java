@@ -3,6 +3,7 @@ package cn.fdongl.meme.authority.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface LoginMapper {
@@ -17,6 +18,8 @@ public interface LoginMapper {
     @Select("select user_id from user where open_id = #{param1} limit 1")
     Integer getUser(String openid);
 
+    @Update("update user set avatar=#{param2},nickname=#{param3} where user_id=#{param1}")
+    Integer updateUser(Integer userId,String avatar,String nickname);
 
 
 }

@@ -16,5 +16,6 @@ public class PunchInput {
     String description;
     String createDate;
     Integer createUser;
+    String taskLevel;
 
 }

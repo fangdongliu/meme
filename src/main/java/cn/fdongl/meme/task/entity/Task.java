@@ -9,12 +9,13 @@ import java.util.Date;
 public class Task {
     Integer aHp;
     Integer bHp;
-    String rewardType;
+    Integer rewardType;
     String rewardParam;
     Integer status;
     Integer taskId;
     Integer aUserId;
     Date startDate;
+    Date endDate;
     Integer weekCount;
     Integer bUserId;
     Integer aStartTime;

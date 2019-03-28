@@ -2,7 +2,6 @@ package cn.fdongl.meme.authority.controller;
 
 import cn.fdongl.meme.authority.entity.LoginStatus;
 import cn.fdongl.meme.authority.mapper.LoginMapper;
-import cn.fdongl.meme.tool.ErrorDefiner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -36,9 +35,12 @@ public class LoginController {
             @RequestParam("avatar") String avatar,
             HttpServletRequest request)throws Exception {
 
-        String url = "https://api.weixin.qq.com/sns/jscode2session?" +
-                "appid=wxf90a03366fb7d3cc&secret=23a16bbd93c0cc002408cf3bf220ac4f&js_code=" +
-                code + "&grant_type=authorization_code";
+//        String url = "https://api.weixin.qq.com/sns/jscode2session?" +
+//                "appid=wxf90a03366fb7d3cc&secret=23a16bbd93c0cc002408cf3bf220ac4f&js_code=" +
+//                code + "&grant_type=authorization_code";
+          String url= "https://api.weixin.qq.com/sns/jscode2session?" +
+                  "appid=wx5dabc0ab51184872&secret=4df873de65b9b3fdaabb614cc79b3fc1&js_code=" +
+                  code + "&grant_type=authorization_code";
 
         Map<String, Object> result = new HashMap<>();
         RestTemplate restTemplate = getRestTemplate();
@@ -58,6 +60,7 @@ public class LoginController {
             result.put("firstLogin", true);
         } else {
             pairId = loginMapper.getUserPair(userId);
+            loginMapper.updateUser(userId,avatar,nickname);
         }
 
         LoginStatus loginStatus = new LoginStatus(userId, pairId, (String) m.get("session_key"));
@@ -69,8 +72,6 @@ public class LoginController {
         }
 
         request.getSession().setAttribute("loginStatus", loginStatus);
-
-
 
         return result;
 

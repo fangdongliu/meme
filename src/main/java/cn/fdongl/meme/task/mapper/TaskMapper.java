@@ -29,6 +29,7 @@ public interface TaskMapper {
             "\tb_color AS bColor,\n" +
             "\tb_icon AS bIcon,\n" +
             "\tstart_date AS startDate,\n" +
+            "\tend_date AS endDate,\n" +
             "\tweek_count AS weekCount\n" +
             "FROM task\n" +
             "WHERE pair_id=#{param1} AND (`status`=0 or `status`=1)\n" +
@@ -58,7 +59,8 @@ public interface TaskMapper {
             "\tb_description AS bDescription,\n" +
             "\tb_color AS bColor,\n" +
             "\tb_icon AS bIcon,\n" +
-            "\tstart_date AS startDate,\n" +
+            "\tstart_date AS startDate,\n"+
+            "\tend_date AS endDate,\n" +
             "\tweek_count AS weekCount\n" +
             "FROM task\n" +
             "WHERE task_id=#{param1}")
@@ -111,9 +113,16 @@ public interface TaskMapper {
             "\tcreate_date,\n"+
             "\tend_date,\n"+
             "\ta_hp)values\n" +
-            "\t(#{pairId},#{aUserId},#{rewardType},#{rewardParam},#{description},#{color},#{icon},#{repeatWeek},\n" +
+            "\t(#{pairId},#{aUserId},#{rewardType}  ,#{rewardParam},#{description},#{color},#{icon},#{repeatWeek},\n" +
             "\t#{weekCount},#{startTime},#{startDate},CURRENT_DATE(),#{endDate},#{hp})")
     Integer createA(TaskCreateA param);
+
+    @Insert("INSERT INTO seed(pair_id,seed_id,seed_need)values(#{param1.pairId},#{param1.rewardParam},#{param1.weekCount}*#{param2})")
+    Integer createSeedA(TaskCreateA param,Integer n);
+
+    @Update("UPDATE seed SET seed_need=seed_need+(SELECT week_count from task where task_id=#{param3} limit 1)*#{param2}\n" +
+            "WHERE task_id=#{param3}")
+    Integer createSeedB(TaskCreateB param,Integer n,Integer taskId);
 
     @Update("UPDATE task SET\n" +
             "\tb_description=#{description},\n" +

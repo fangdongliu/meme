@@ -27,7 +27,7 @@ public class TaskCreateA {
 
     @NotNull
     @Min(0L)
-    @Max(23L)
+    @Max(22L)
     Integer startTime;
     @NotNull
     @Size(max=48)

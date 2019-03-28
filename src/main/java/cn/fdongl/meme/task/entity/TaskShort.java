@@ -10,6 +10,7 @@ public class TaskShort {
 
     Integer taskId;
     Date startDate;
+    Date endDate;
     Integer weekCount;
     Integer aUserId;
     String aDescription;

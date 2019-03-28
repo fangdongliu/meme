@@ -3,7 +3,6 @@ package cn.fdongl.meme.pair.controller;
 import cn.fdongl.meme.authority.entity.LoginStatus;
 import cn.fdongl.meme.pair.entity.UserPair;
 import cn.fdongl.meme.pair.mapper.PairMapper;
-import cn.fdongl.meme.tool.ErrorDefiner;
 import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import sun.rmi.runtime.Log;
 
 import javax.naming.AuthenticationException;
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +26,10 @@ public class PairController {
     @Autowired
     PairMapper pairMapper;
 
+
+    LoginStatus test(){
+        return new LoginStatus(62,125,"");
+    }
     @PostMapping({"","info"})
     public Object info(HttpServletRequest request,
                     Integer pairId) throws Exception {
@@ -43,8 +47,9 @@ public class PairController {
 
         UserPair userPair = pairMapper.info(pairId);
         return userPair;
-
     }
+
+
 
     @PostMapping("list")
     public Object list(
@@ -81,7 +86,6 @@ public class PairController {
     ) throws Exception {
 
         LoginStatus loginStatus = LoginStatus.fromRequest(request);
-
         Integer currentPairId = pairMapper.getUserPair(loginStatus.getUserId());
 
         if(currentPairId!=null){
@@ -89,6 +93,7 @@ public class PairController {
         }
 
         pairMapper.deletePairs(loginStatus.getUserId());
+
 
         Integer n = pairMapper.accept(pairId,loginStatus.getUserId());
 
