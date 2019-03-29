@@ -27,14 +27,11 @@ public class PairController {
     PairMapper pairMapper;
 
 
-    LoginStatus test(){
-        return new LoginStatus(62,125,"");
-    }
+
     @PostMapping({"","info"})
     public Object info(HttpServletRequest request,
-                    Integer pairId) throws Exception {
-
-        LoginStatus loginStatus = LoginStatus.fromRequest(request);
+                    Integer pairId,
+                       LoginStatus loginStatus) throws Exception {
 
         if(pairId == null){
             if(loginStatus.getPairId()==null){
@@ -53,21 +50,17 @@ public class PairController {
 
     @PostMapping("list")
     public Object list(
-            HttpServletRequest request
+            LoginStatus loginStatus
     ) throws AuthenticationException {
 
-        LoginStatus loginStatus = LoginStatus.fromRequest(request);
+        return pairMapper.list(loginStatus.getUserId());
 
-        List list = pairMapper.list(loginStatus.getUserId());
-
-        return list;
     }
 
     @PostMapping("start")
     public Object start(
-            HttpServletRequest request
+            LoginStatus loginStatus
     ) throws Exception{
-        LoginStatus loginStatus = LoginStatus.fromRequest(request);
         Integer pairId = pairMapper.getUserPair(loginStatus.getUserId());
         if(pairId == null){
             pairId = pairMapper.start(loginStatus.getUserId());
@@ -81,11 +74,10 @@ public class PairController {
 
     @PostMapping("accept")
     public Object accept(
-            HttpServletRequest request,
+            LoginStatus loginStatus,
             @RequestParam("pairId") Integer pairId
     ) throws Exception {
 
-        LoginStatus loginStatus = LoginStatus.fromRequest(request);
         Integer currentPairId = pairMapper.getUserPair(loginStatus.getUserId());
 
         if(currentPairId!=null){
@@ -107,10 +99,9 @@ public class PairController {
 
     @PostMapping("end")
     public Object end(
+            LoginStatus loginStatus,
             HttpServletRequest request
     ) throws Exception {
-
-        LoginStatus loginStatus = LoginStatus.fromRequest(request);
 
         Integer n = pairMapper.end(loginStatus.getUserId());
 
@@ -124,11 +115,9 @@ public class PairController {
 
     @PostMapping("delete")
     public void del(
-            HttpServletRequest request,
+            LoginStatus loginStatus,
             @RequestParam("pairId") Integer pairId
     ) throws Exception {
-
-        LoginStatus loginStatus = LoginStatus.fromRequest(request);
 
         Integer n = pairMapper.deleteA(pairId,loginStatus.getUserId());
 

@@ -31,10 +31,9 @@ public class TaskController {
 
     @PostMapping("list")
     public Object list(
-            HttpServletRequest request,
-            Integer pairId
-    ) throws AuthenticationException {
-        LoginStatus loginStatus = LoginStatus.fromRequest(request);
+        LoginStatus loginStatus,
+        Integer pairId
+    )  {
 
         if(pairId == null){
             pairId = loginStatus.getPairId();
@@ -45,11 +44,9 @@ public class TaskController {
 
     @PostMapping("info")
     public Object info(
-            HttpServletRequest request,
+            LoginStatus loginStatus,
             Integer taskId
     ) throws Exception {
-        LoginStatus loginStatus = LoginStatus.fromRequest(request);
-
         if(taskId == null){
             if(loginStatus.getPairId()==null){
                 throw new Exception();
@@ -69,10 +66,10 @@ public class TaskController {
 
     @PostMapping("end")
     public Object end(
-            HttpServletRequest request
+            LoginStatus loginStatus
     ) throws Exception {
 
-        LoginStatus loginStatus =LoginStatus.fromRequestAndCheckPair(request);
+        loginStatus.checkPair();
 
         try {
             Integer n = taskMapper.end(loginStatus.getPairId());
@@ -90,12 +87,10 @@ public class TaskController {
 
     @PostMapping("createA")
     public Object createA(
-            HttpServletRequest request,
+            LoginStatus loginStatus,
             @Valid TaskCreateA param
             )throws Exception{
-
-        LoginStatus loginStatus = LoginStatus.fromRequest(request);
-
+        loginStatus.checkPair();
         param.setAUserId(loginStatus.getUserId());
 
         Integer taskId = taskMapper.getCurrentTaskId(loginStatus.getPairId());
@@ -128,7 +123,7 @@ public class TaskController {
                 n++;
             }
             else if(c!='0'){
-                throw new Exception();
+                throw new Exception("星期中出现了非01字符");
             }
         }
 
@@ -153,11 +148,11 @@ public class TaskController {
 
     @PostMapping("createB")
     public Object createB(
-            HttpServletRequest request,
+            LoginStatus loginStatus,
             @Valid TaskCreateB param
             )throws Exception{
 
-        LoginStatus loginStatus = LoginStatus.fromRequestAndCheckPair(request);
+        loginStatus.checkPair();
 //        LoginStatus loginStatus = new LoginStatus(200,11165,"");
 
         Integer t = 0;
@@ -170,7 +165,7 @@ public class TaskController {
                 t++;
             }
             else if(c!='0'){
-                throw new Exception();
+                throw new Exception("星期中出现了非01字符");
             }
         }
 
@@ -184,15 +179,15 @@ public class TaskController {
 
 
         if(n<=0){
-            throw new Exception();
+            throw new Exception("创建B失败");
         }
 
-        n=null;
+        try {
+            taskMapper.createSeedB(param, t, taskMapper.getCurrentTaskId(param.getPairId()));
+        }catch (Exception e){
 
-        n=taskMapper.createSeedB(param,t,taskMapper.getCurrentTaskId(param.getPairId()));
-        if(n<=0){
-            throw new Exception();
         }
+
         return null;
 
     }

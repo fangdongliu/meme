@@ -22,6 +22,12 @@ public class LoginStatus {
         this.pairId = pairId;
     }
 
+    public void checkPair() throws Exception {
+        if(pairId == null){
+            throw new Exception("当前未配对");
+        }
+    }
+
     public static LoginStatus fromRequest(HttpServletRequest request) throws AuthenticationException {
 
         HttpSession session = request.getSession();

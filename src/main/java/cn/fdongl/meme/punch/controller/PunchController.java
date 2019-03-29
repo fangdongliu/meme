@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import sun.rmi.runtime.Log;
 
 import javax.naming.AuthenticationException;
 import javax.servlet.http.HttpServletRequest;
@@ -44,21 +45,18 @@ public class PunchController {
 
     @PostMapping("list")
     public Object list(
-            Integer taskId,
-            HttpServletRequest request) throws Exception {
-
-        LoginStatus loginStatus = LoginStatus.fromRequest(request);
+            Integer taskId, LoginStatus loginStatus) throws Exception {
 
         return punchMapper.list(taskId);
     }
     LoginStatus test(){
-        return new LoginStatus(100,11165,"");
+        return new LoginStatus(9,11212,"");
     }
     @PostMapping("/status")
     public Object status(
-            HttpServletRequest request
+            LoginStatus loginStatus
     ) throws Exception {
-        LoginStatus loginStatus = LoginStatus.fromRequestAndCheckPair(request);
+        loginStatus.checkPair();
     //        LoginStatus loginStatus = test();
         Calendar calendar = Calendar.getInstance();
 
@@ -69,7 +67,7 @@ public class PunchController {
         Task task = taskMapper.info2(loginStatus.getPairId());
 
         if(task==null){
-            throw new Exception();
+            throw new Exception("当前任务为空");
         }
 
         PunchStatus punchStatus = new PunchStatus();
@@ -172,12 +170,10 @@ public class PunchController {
     public Object punch(
             @RequestParam("file")MultipartFile file,
             @RequestParam("description") String description,
-
-            HttpServletRequest request
+            LoginStatus loginStatus
             ) throws Exception {
 
-        LoginStatus loginStatus = LoginStatus.fromRequest(request);
-//        LoginStatus loginStatus = test();
+    //    LoginStatus loginStatus = LoginStatus.fromRequest(request);
 
         Calendar calendar = Calendar.getInstance();
 
@@ -190,11 +186,11 @@ public class PunchController {
 
 
         if(task==null){
-            throw new Exception();
+            throw new Exception("当前任务为空");
         }
 
         if(task.getStatus()>0){
-            throw new Exception();
+            throw new Exception("当前任务已过期");
         }
 
         Integer startTime=null;
@@ -210,11 +206,11 @@ public class PunchController {
         }
 
         if(startTime!=hour&&startTime+1!=hour){
-            throw new Exception();
+            throw new Exception("不在打卡时间内");
         }
 
         if(repeatWeek.charAt(dayOfWeek)!='1'){
-            throw new Exception();
+            throw new Exception("不在打卡星期内");
         }
 
         String suffix;
@@ -250,14 +246,14 @@ public class PunchController {
             PunchInput punch = new PunchInput(loginStatus.getPairId(), growupValue, task.getTaskId(), filename, description, format.format(date), loginStatus.getUserId(), getTaskLevel(task.getACount() + task.getBCount() + 1, task.getARCount() + task.getBRCount()));
             Integer n = punchMapper.punchA(punch);
             if (n <= 0) {
-                throw new Exception();
+                throw new Exception("打卡失败");
             }
             if(task.getRewardType() == 0) {
 
             }else if(task.getRewardType() == 1){
                 n=punchMapper.punchAseed(punch);
                 if (n <= 0) {
-                    throw new Exception();
+                    throw new Exception("种子设置失败");
                 }
             }
         }
@@ -268,14 +264,14 @@ public class PunchController {
             PunchInput punch = new PunchInput(loginStatus.getPairId(),growupValue,task.getTaskId(),filename,description,format.format(date),loginStatus.getUserId(),getTaskLevel(task.getACount()+task.getBCount()+1,task.getARCount()+task.getBRCount()));
             Integer n = punchMapper.punchB(punch);
             if(n<=0){
-                throw new Exception();
+                throw new Exception("打卡失败");
             }
             if(task.getRewardType() == 0){
 
             }else if(task.getRewardType() == 1){
                 n=punchMapper.punchBseed(punch);
                 if (n <= 0) {
-                    throw new Exception();
+                    throw new Exception("种子设置失败");
                 }
             }
         }
@@ -283,7 +279,7 @@ public class PunchController {
         SeedStatus seedStatus =punchMapper.getSeedStatus(task.getTaskId());
         if(seedStatus.getNeed() == seedStatus.getGrowth()){
             Integer m = punchMapper.finish(task.getTaskId(),format.format(date));
-            if(m<=0) throw  new Exception();
+            if(m<=0) throw  new Exception("我是一棵？？？");
         }
 
         return null;
@@ -293,56 +289,57 @@ public class PunchController {
     public Map supply(
             @RequestParam("file")MultipartFile file,
             @RequestParam("description") String description,
-            HttpServletRequest request
+            LoginStatus loginStatus
     ) throws Exception {
 
-       LoginStatus loginStatus = LoginStatus.fromRequestAndCheckPair(request);
+      // LoginStatus loginStatus = LoginStatus.fromRequestAndCheckPair(request);
        // LoginStatus loginStatus = new LoginStatus(300,11175,"");
-
 
         Calendar calendar = Calendar.getInstance();
 
         Date date = calendar.getTime();
         date.setTime(date.getTime()-24*60*60*1000);
 
-        int dayOfWeek = (calendar.get(Calendar.DAY_OF_WEEK)+5)%7;
+        int dayOfWeek = (calendar.get(Calendar.DAY_OF_WEEK)+4)%7;
 
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
 
         Task task = taskMapper.info2(loginStatus.getPairId());
 
-        if(task.getStatus()>0){
-            throw new Exception();
+        if(task==null){
+            throw new Exception("当前任务为空");
         }
 
-        if(task==null){
-            throw new Exception();
+        if(task.getStatus()>0){
+            throw new Exception("当前任务已过期");
         }
+
+
 
         Integer startTime=null;
         String repeatWeek = null;
 
         if(task.getAUserId() .equals( loginStatus.getUserId())){
             if(task.getAHp()<=task.getARCount()){
-                throw new Exception();
+                throw new Exception("补卡失败：A的hp不足");
             }
             startTime = task.getAStartTime();
             repeatWeek = task.getARepeatWeek();
         }
         else{
             if(task.getBHp()<=task.getBRCount()){
-                throw new Exception();
+                throw new Exception("补卡失败：B的hp不足");
             }
             startTime = task.getBStartTime();
             repeatWeek = task.getBRepeatWeek();
         }
 
         if(startTime!=hour&&startTime+1!=hour){
-            throw new Exception();
+            throw new Exception("不在补卡时间范围内");
         }
 
         if(repeatWeek.charAt(dayOfWeek)!='1'){
-            throw new Exception();
+            throw new Exception("不在补卡星期范围内");
         }
 
         String suffix;
@@ -375,14 +372,14 @@ public class PunchController {
             PunchInput punch = new PunchInput(loginStatus.getPairId(),growupValue,task.getTaskId(),filename,description,format.format(date),loginStatus.getUserId(),getTaskLevel(task.getACount()+task.getBCount(),1+task.getARCount()+task.getBRCount()));
             Integer n = punchMapper.supplyA(punch);
             if(n<=0){
-                throw new Exception();
+                throw new Exception("补卡失败");
             }
             if(task.getRewardType() == 0) {
 
             }else if(task.getRewardType() == 1){
                 n=punchMapper.supplyAseed(punch);
                 if (n <= 0) {
-                    throw new Exception();
+                    throw new Exception("补卡失败");
                 }
             }
 
@@ -394,7 +391,7 @@ public class PunchController {
             PunchInput punch = new PunchInput(loginStatus.getPairId(),growupValue,task.getTaskId(),filename,description,format.format(date),loginStatus.getUserId(),getTaskLevel(task.getACount()+task.getBCount(),task.getARCount()+1+task.getBRCount()));
             Integer n = punchMapper.supplyB(punch);
             if(n<=0){
-                throw new Exception();
+                throw new Exception("补卡失败");
             }
 
             if(task.getRewardType() == 0) {
@@ -402,7 +399,7 @@ public class PunchController {
             }else if(task.getRewardType() == 1){
                 n=punchMapper.supplyBseed(punch);
                 if (n <= 0) {
-                    throw new Exception();
+                    throw new Exception("补卡失败");
                 }
             }
         }
@@ -410,7 +407,7 @@ public class PunchController {
         SeedStatus seedStatus =punchMapper.getSeedStatus(task.getTaskId());
         if(seedStatus.getNeed() == seedStatus.getGrowth()){
             Integer m = punchMapper.finish(task.getTaskId(),format.format(date));
-            if(m<=0) throw  new Exception();
+            if(m<=0) throw  new Exception("种子完成失败");
         }
 
         return null;
